@@ -1,0 +1,36 @@
+# remote map G20BTS PRO - RF
+# Otto Kreer - 2022
+
+key 2     1
+key 3     2
+key 4     3
+key 5     4
+key 6     5
+key 7     6
+key 8     7
+key 9     8
+key 10    9
+key 11    0
+
+key 582   VOICE_ASSIST
+
+key 158   BACK
+key 28   DPAD_CENTER
+key 353   DPAD_CENTER
+key 108   DPAD_DOWN
+key 103   DPAD_UP
+key 172   HOME
+key 105   DPAD_LEFT
+key 106   DPAD_RIGHT
+key 104   PAGE_UP
+key 109   PAGE_DOWN
+key 115   VOLUME_UP
+key 114   VOLUME_DOWN
+key 113   VOLUME_MUTE
+key 14   DEL
+key 127   MENU
+key 116   POWER
+
+key 165    MEDIA_PREVIOUS
+key 164    MEDIA_PLAY_PAUSE
+key 163    MEDIA_NEXT

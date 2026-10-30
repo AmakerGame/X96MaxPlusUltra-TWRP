@@ -1,0 +1,10 @@
+# Never commit device images, firmware dumps, or proprietary TWRP/vendor blobs.
+/input/
+/dist/
+*.img
+*.img.gz
+*.7z
+*.zip
+*.log
+*.sha256
+__pycache__/
