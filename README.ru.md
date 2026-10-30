@@ -2,7 +2,11 @@
 
 Неофициальный порт для **X96 Max Plus Ultra 4 ГБ RAM / 64 ГБ**, плата `ohm`, Amlogic S905X4, Android 11. Совместимость сверялась на одном экземпляре с fingerprint `Droidlogic/ohm/ohm:11/RD2A.211001.002/eng.ubuntu.20240531.201028:userdebug/test-keys`, ядром 5.4.125 и загрузчиком `01.01.240531.211011`. Другие варианты памяти/платы/прошивки не подтверждены.
 
-Это не официальная сборка Team Win. TWRP основан на пакете AM7 X4 3.6.1_11-0, который загружался на этой приставке. Документация: [українською](docs/BUILD_UK.md) · [на русском](docs/BUILD_RU.md), [временный запуск USB](docs/USB_TEST_UK.md) · [USB на русском](docs/USB_TEST_RU.md), [совместимость](docs/COMPATIBILITY.md).
+Это не официальная сборка Team Win. TWRP основан на пакете AM7 X4 3.6.1_11-0, который загружался на этой приставке.
+
+**Язык:** [English](README.md) · [українською](docs/BUILD_UK.md) · [на русском](docs/BUILD_RU.md).
+
+Руководства: [временный запуск USB (UA)](docs/USB_TEST_UK.md) · [USB на русском](docs/USB_TEST_RU.md) · [совместимость](docs/COMPATIBILITY.md).
 
 ## Текущее состояние
 
