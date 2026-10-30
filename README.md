@@ -18,6 +18,8 @@ The combined image booted back into Android successfully. `magisk -v` reported M
 
 D-pad keys are left as native Linux key events, and the IR cursor scancodes are disabled. The captured up/down/left/right and OK events are mapped to `KEY_UP`, `KEY_DOWN`, `KEY_LEFT`, `KEY_RIGHT`, and `KEY_ENTER`; no helper turns them into pointer motion or clicks. The device Linux keylayout maps key codes 28/103/108/105/106 to DPAD_CENTER/UP/DOWN/LEFT/RIGHT. The build now validates these codes in both captured IR profiles and both device keylayouts. This TWRP GUI does not provide general focus traversal for arrow keys, so full menu navigation still requires GUI/framework changes and a matching source build. The current image sends native key events and does not emulate a mouse.
 
+The build completes the Ukrainian resource file from the matching English TWRP resources, translates the previously missing entries, and checks that both Ukrainian and Russian files contain every English string with matching format placeholders. A full framework rebuild is not available in this checkout, so the GUI's missing D-pad focus navigation cannot be safely added to this image by editing its theme alone.
+
 ## Known limitations
 
 - The supplied recovery log reports `Unable to decrypt FBE device`. `/data` decryption and Keymaster/TEE compatibility remain unresolved. **Do not format Data to test this.**

@@ -258,6 +258,13 @@ def validate_keylayout(name: str, content: bytes) -> None:
 def patch_ramdisk(compressed: bytes, tvremote: Path) -> bytes:
     raw = gzip.decompress(compressed)
     records = parse_newc(raw)
+    english_language = next(
+        (data for _, name, data in records
+         if name[:-1].decode("utf-8", "replace") == "twres/languages/en.xml"),
+        None,
+    )
+    if english_language is None:
+        raise ValueError("TWRP ramdisk has no English resource file")
     found: set[str] = set()
     patched: list[tuple[bytes, bytes, bytes]] = []
     for header, name, data in records:
@@ -295,7 +302,7 @@ def patch_ramdisk(compressed: bytes, tvremote: Path) -> bytes:
             "twres/languages/ru.xml",
             "twres/languages/uk.xml",
         }:
-            data = patch_theme_file(path, data)
+            data = patch_theme_file(path, data, english_language)
         patched.append((header, name, data))
     if found != {"init", "recovery_service", "fstab"}:
         raise ValueError(f"did not find expected ramdisk files: {found}")
