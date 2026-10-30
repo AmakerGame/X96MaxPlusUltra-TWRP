@@ -12,14 +12,16 @@ That device reports Linux `5.4.125`, bootloader `01.01.240531.211011`, A/B slots
 
 ## Device and image status
 
-The image `boot_a_twrp_patched.img` with SHA-256 `e3339615a8e4665482d065e5d89e0fcfdc9c06c70d10fd63eacbb7746b1bfd3a` was written to the device's active `boot_a`. A full readback SHA-256 matched. `adb reboot recovery` was issued, but ADB became `offline` in recovery, so the latest screen and input behavior could not be independently verified.
+A combined TWRP + Magisk 31.1 boot image was built and written to this device's active `boot_a` on 2026-10-30. Local image SHA-256: `ada7a8d030ebbba97c77d60eb97b2c48754f5bcebd92d68fa9c4fce4198341a7`; the partition readback hash matched exactly. The image is Android boot header v3 and 64 MiB. Its ramdisk contains the TWRP recovery startup files, both captured IR profiles, and Magisk's `.backup/.magisk` and `overlay.d` payloads.
 
-The user reports that the remote's **OK button still does not work**. The image includes both captured IR profiles (`fb04` and `fe01`) with OK mapped to a mouse click, and starts `remotecfg` in the recovery SELinux context. This is a targeted fix, not a confirmed result. A gyroscope mouse remains the fallback. RTC clock synchronization is included but also needs on-screen confirmation.
+After `adb reboot recovery`, Wi-Fi ADB went offline and disconnected. The recovery screen, Magisk SU after Android boot, and remote behavior therefore remain unverified on-device. The last known Android fingerprint is the one above. A full 64 MiB backup of the previously installed TWRP boot is available locally as `../boot_a_twrp_before_magisk.img` (SHA-256 `e3339615a8e4665482d065e5d89e0fcfdc9c06c70d10fd63eacbb7746b1bfd3a`). The original Magisk 31.1 boot backup is `dist/boot_a_magisk_restore.img` (SHA-256 `2d520b45aacd1e7218db904ca5b47527e0d881a1f1cc2fd9acaeda39affdb733`). Keep both off-device before further changes.
+
+D-pad keys are left as native Linux key events, and the IR cursor scancodes are disabled. The captured up/down/left/right and OK events are mapped to `KEY_UP`, `KEY_DOWN`, `KEY_LEFT`, `KEY_RIGHT`, and `KEY_ENTER`; no helper turns them into pointer motion or clicks. This TWRP GUI does not provide general focus traversal for arrow keys, so full menu navigation needs GUI/framework changes and a source build. The current package only preserves the native key events; do not assume the D-pad can operate every screen.
 
 ## Known limitations
 
 - The supplied recovery log reports `Unable to decrypt FBE device`. `/data` decryption and Keymaster/TEE compatibility remain unresolved. **Do not format Data to test this.**
-- Partition mounting, backup/restore, ZIP installation, USB boot, remote clicks, and clock accuracy need separate on-device checks.
+- Partition mounting, backup/restore, ZIP installation, USB boot, D-pad behavior, and clock accuracy need separate on-device checks.
 - The image is Android boot header v3, 64 MiB, and preserves the stock kernel. It does not rewrite `vendor_boot`, `dtbo`, `super`, or the bootloader.
 - Before any write or wipe, back up personal files and the original `boot_a`. The detailed guides explain the recovery and data-loss implications.
 
@@ -31,6 +33,6 @@ The user reports that the remote's **OK button still does not work**. The image 
 
 ## Build inputs and repository contents
 
-Firmware images, TWRP binaries, vendor executables, device logs, and generated `.img` files are not tracked. The build script reads local inputs from `input/` and writes outputs to `dist/`; both directories are ignored by Git. See the guides for the exact files and build procedure.
+Firmware images, TWRP binaries, vendor executables, device logs, and generated `.img` files are not tracked. The build script reassembles the tested AM7 X4 TWRP base with this device’s captured configuration; it does not compile the TWRP framework from source. A full source build needs a matching device tree and Linux build environment (WSL is not installed here). It reads local inputs from `input/` and writes outputs to `dist/`; both directories are ignored by Git. See the guides for the exact files and build procedure.
 
 This project contains device-specific configuration samples and source changes. See [LICENSE](LICENSE) and [NOTICE](NOTICE.md) for licensing details.

@@ -127,26 +127,17 @@ def patch_init(data: bytes) -> bytes:
         "    disabled\n"
         "    seclabel u:r:recovery:s0"
     )
-    new_services += (
-        "\n\nservice tvremote /sbin/tvremote\n"
-        "    user root\n"
-        "    group root input\n"
-        "    class main\n"
-        "    disabled\n"
-        "    seclabel u:r:recovery:s0"
-    )
     if old_services not in text:
         raise ValueError("expected AM7 X4 service block was not found")
     text = text.replace(old_services, new_services, 1)
 
     # Start the display HAL at the vendor's early-boot phase and use its
-    # exact IR table after the recovery input devices have appeared.
+    # exact IR key tables after recovery input devices have appeared.
     text = text.replace(
         "on boot\n    start vendor.keymaster-4-1\n",
         "on early-boot\n    start system_control\n\n"
         "on boot\n    start vendor.keymaster-4-1\n    start remotecfg_fb04\n"
-        "    start remotecfg_fe01\n"
-        "    start tvremote\n",
+        "    start remotecfg_fe01\n",
         1,
     )
     return text.encode("utf-8")
@@ -158,7 +149,7 @@ def patch_recovery_service(data: bytes) -> bytes:
     new_action = (
         "on boot\n"
         "    setprop persist.sys.timezone Europe/Kiev\n"
-        "    exec u:r:recovery:s0 root root -- /sbin/tvremote --set-time\n\n"
+        "    exec u:r:recovery:s0 root root -- /sbin/tvremote\n\n"
         "    start recovery\n\n"
         "# For starting recovery on 5.0 and newer\n"
     )
@@ -306,27 +297,16 @@ def patch_ramdisk(compressed: bytes, tvremote: Path) -> bytes:
                 content = content.replace(b"repeat_enable = 0", b"repeat_enable = 1", 1)
             elif b"repeat_enable = 1" not in content:
                 raise ValueError("expected repeat_enable setting was not found in remote.cfg")
-        elif name in {"sbin/remote.tab1", "sbin/remote-tab2.tab"}:
-            # Preserve both live profiles read from this box. Their OK keys
-            # arrive as KEY_ENTER, while the IR node is a native mouse; map
-            # each profile's confirmed OK scancode to BTN_LEFT for TWRP.
-            expected = {
-                "sbin/remote.tab1": (b"custom_code = 0xfb04", b"0x5[cC]", "fb04/0x5c"),
-                "sbin/remote-tab2.tab": (b"custom_code = 0xfe01", b"0x13", "fe01/0x13"),
-            }
-            marker, scan_re, label = expected[name]
-            start = content.find(marker)
-            if start < 0:
-                raise ValueError(f"{name} does not contain the live {label.split('/')[0]} profile")
-            end = content.find(b"key_end", start)
-            if end < 0:
-                raise ValueError(f"{name} profile has no key_end")
-            section = content[start:end]
-            pattern = rb"(?m)^([ \t]*" + scan_re + rb"[ \t]+)28([ \t]*(?:#.*)?\r?)$"
-            section, count = re.subn(pattern, rb"\g<1>272\2", section)
-            if count != 1:
-                raise ValueError(f"could not remap {label} OK key to BTN_LEFT")
-            content = content[:start] + section + content[end:]
+        elif name == "sbin/remote-tab2.tab":
+            # Disable Amlogic's pointer mode. Keep the captured physical D-pad
+            # scancodes mapped to KEY_UP/DOWN/LEFT/RIGHT and OK to KEY_ENTER.
+            for key in ("cursor_left_scancode", "cursor_right_scancode",
+                        "cursor_up_scancode", "cursor_down_scancode",
+                        "cursor_ok_scancode"):
+                pattern = rb"(?m)^([ \t]*" + key.encode("ascii") + rb"[ \t]*=[ \t]*)0x[0-9a-fA-F]+"
+                content, count = re.subn(pattern, rb"\g<1>0x00", content)
+                if count != 1:
+                    raise ValueError(f"could not disable cursor mode field {key}")
         additions.append(make_newc(name, content, mode, next_inode))
         next_inode += 1
     patched[-1:-1] = additions
