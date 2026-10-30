@@ -212,6 +212,49 @@ def build_tvremote() -> Path:
     return output
 
 
+REMOTE_KEYMAPS = {
+    "sbin/remote.tab1": ("0xfb04", {"5c": 28, "44": 103, "1d": 108, "1c": 105, "48": 106}),
+    "sbin/remote-tab2.tab": ("0xfe01", {"13": 28, "16": 103, "1a": 108, "51": 105, "50": 106}),
+}
+
+
+def validate_remote_map(name: str, content: bytes) -> None:
+    profile, keymap = REMOTE_KEYMAPS[name]
+    if not re.search(rb"(?im)^\s*custom_code\s*=\s*" + profile.encode("ascii") + rb"\s*$", content):
+        raise ValueError(f"{name} has the wrong remote profile; expected {profile}")
+    for scancode, keycode in keymap.items():
+        pattern = rb"(?im)^\s*0x" + scancode.encode("ascii") + rb"\s+" + str(keycode).encode("ascii") + rb"(?:\s|$)"
+        if len(re.findall(pattern, content)) != 1:
+            raise ValueError(f"{name} must map scancode 0x{scancode} to Linux key code {keycode}")
+    if name == "sbin/remote-tab2.tab":
+        for key in ("cursor_left_scancode", "cursor_right_scancode", "cursor_up_scancode",
+                    "cursor_down_scancode", "cursor_ok_scancode"):
+            if not re.search(rb"(?im)^\s*" + key.encode("ascii") + rb"\s*=\s*0x00\s*$", content):
+                raise ValueError(f"{name} must disable cursor mode field {key}")
+
+
+def validate_keylayout(name: str, content: bytes) -> None:
+    required = {
+        "system/usr/keylayout/Vendor_0002_Product_0002.kl": (
+            (28, "DPAD_CENTER"), (103, "DPAD_UP"), (108, "DPAD_DOWN"),
+            (105, "DPAD_LEFT"), (106, "DPAD_RIGHT"), (158, "BACK"),
+        ),
+        "system/usr/keylayout/Vendor_4842_Product_0001.kl": (
+            (28, "DPAD_CENTER"), (103, "DPAD_UP"), (108, "DPAD_DOWN"),
+            (105, "DPAD_LEFT"), (106, "DPAD_RIGHT"), (158, "BACK"),
+        ),
+    }
+    expected = required.get(name)
+    if expected is not None:
+        missing = []
+        for code, key in expected:
+            pattern = rb"(?im)^\s*key\s+" + str(code).encode("ascii") + rb"\s+" + key.encode("ascii") + rb"\s*$"
+            if not re.search(pattern, content):
+                missing.append(f"key {code} {key}")
+        if missing:
+            raise ValueError(f"{name} is missing expected D-pad mappings: {', '.join(missing)}")
+
+
 def patch_ramdisk(compressed: bytes, tvremote: Path) -> bytes:
     raw = gzip.decompress(compressed)
     records = parse_newc(raw)
@@ -307,6 +350,9 @@ def patch_ramdisk(compressed: bytes, tvremote: Path) -> bytes:
                 content, count = re.subn(pattern, rb"\g<1>0x00", content)
                 if count != 1:
                     raise ValueError(f"could not disable cursor mode field {key}")
+        if name in REMOTE_KEYMAPS:
+            validate_remote_map(name, content)
+        validate_keylayout(name, content)
         additions.append(make_newc(name, content, mode, next_inode))
         next_inode += 1
     patched[-1:-1] = additions

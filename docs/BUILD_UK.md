@@ -26,13 +26,13 @@ ada7a8d030ebbba97c77d60eb97b2c48754f5bcebd92d68fa9c4fce4198341a7
 
 Образ має 64 MiB і Android boot header v3. У ramdisk перевірені `init.recovery.amlogic.rc`, `init.recovery.service.rc`, обидва IR-профілі, `sbin/remotecfg`, `.backup/.magisk` і Magisk overlay. Повна копія попереднього TWRP boot: `../boot_a_twrp_before_magisk.img`, SHA-256 `e3339615a8e4665482d065e5d89e0fcfdc9c06c70d10fd63eacbb7746b1bfd3a`. Штатний Magisk 31.1 boot backup: `dist/boot_a_magisk_restore.img`, SHA-256 `2d520b45aacd1e7218db904ca5b47527e0d881a1f1cc2fd9acaeda39affdb733`.
 
-Після `adb reboot recovery` Wi-Fi ADB перейшов у стан offline і від’єднався. Тому екран recovery, роботу `su` після повернення в Android і фактичну реакцію пульта ще не підтверджено. Контрольна сума `boot_a` до від’єднання дорівнювала образу.
+Образ успішно завантажив Android. Перевірка `magisk -v` показала 31.1, а `su -c id` повернула UID 0 у SELinux-контексті Magisk. Після наступного `adb reboot recovery` Wi-Fi ADB і ping стали недоступні, тому зображення recovery та роботу D-pad в інтерфейсі TWRP на екрані підтвердити не вдалося. Контрольна сума `boot_a` перед reboot збігалася з образом.
 
 ## Magisk і TWRP: чому зник root та як повернути
 
 У цього пристрою Android і TWRP завантажуються через один `boot_a`. Встановлення постійного TWRP замінює ramdisk, у якому працював Magisk, тому Magisk SU зникає. У локальному резерві до встановлення TWRP знайдені маркери Magisk **31.1**. Готова копія `dist/boot_a_magisk_restore.img` має розмір 64 MiB і SHA-256 `2d520b45aacd1e7218db904ca5b47527e0d881a1f1cc2fd9acaeda39affdb733`; це точний boot цієї приставки, не файл для інших пристроїв. Сам образ не публікується в Git.
 
-Комбінований TWRP + Magisk 31.1 уже записано в `boot_a`, але запуск Android із Magisk ще не підтверджено. Якщо новий образ не завантажиться, після відновлення Android можна повернути збережений штатний Magisk boot `dist/boot_a_magisk_restore.img` за командами вище. Це аварійний варіант: він поверне попередній Android/Magisk і прибере постійний TWRP; для recovery тоді використовуйте тимчасовий запуск із USB. Попередній TWRP boot окремо збережений у `../boot_a_twrp_before_magisk.img`.
+Комбінований образ уже успішно завантажив Android із Magisk 31.1, `su` повернув UID 0. Резервний `dist/boot_a_magisk_restore.img` залишено на випадок, якщо доведеться вручну відновити попередній Android/Magisk; цей аварійний файл прибирає постійний TWRP, після чого recovery запускайте тимчасово з USB. Попередній TWRP boot окремо збережений у `../boot_a_twrp_before_magisk.img`.
 
 Збірка з цього репозиторію перепаковує перевірену базу AM7 X4 і конфігурацію цієї приставки; це не повна компіляція TWRP framework з нуля. У середовищі немає WSL, а окремого перевіреного TWRP device tree для цієї прошивки не знайдено. Не підміняйте базу деревом для S905X2 або новішим ядром.
 

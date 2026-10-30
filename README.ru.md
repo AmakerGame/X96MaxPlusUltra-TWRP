@@ -12,9 +12,9 @@
 
 30.10.2026 собран и записан в активный `boot_a` этой приставки совместный образ TWRP + Magisk 31.1. SHA-256 файла и контрольного чтения раздела совпадает: `ada7a8d030ebbba97c77d60eb97b2c48754f5bcebd92d68fa9c4fce4198341a7`. Образ — Android boot header v3, 64 MiB. В ramdisk сохранены init-файлы TWRP, оба считанных ИК-профиля и полезная нагрузка Magisk.
 
-После `adb reboot recovery` Wi-Fi ADB перешёл в offline и отключился. Поэтому экран recovery, работу Magisk SU после загрузки Android и поведение пульта на устройстве подтвердить не удалось. Резервная копия предыдущего TWRP boot: `../boot_a_twrp_before_magisk.img`, SHA-256 `e3339615a8e4665482d065e5d89e0fcfdc9c06c70d10fd63eacbb7746b1bfd3a`. Исходный Magisk boot: `dist/boot_a_magisk_restore.img`, SHA-256 `2d520b45aacd1e7218db904ca5b47527e0d881a1f1cc2fd9acaeda39affdb733`.
+После прошивки образ успешно загрузился обратно в Android. `magisk -v` показал Magisk 31.1, а `su -c id` вернул UID 0 с SELinux-контекстом Magisk. После `adb reboot recovery` Wi-Fi ADB и ping стали недоступны, поэтому экран recovery и работу D-pad в графическом меню TWRP визуально проверить не удалось. Резервная копия предыдущего TWRP boot: `../boot_a_twrp_before_magisk.img`, SHA-256 `e3339615a8e4665482d065e5d89e0fcfdc9c06c70d10fd63eacbb7746b1bfd3a`. Исходный Magisk boot: `dist/boot_a_magisk_restore.img`, SHA-256 `2d520b45aacd1e7218db904ca5b47527e0d881a1f1cc2fd9acaeda39affdb733`.
 
-Стрелки и OK оставлены обычными клавишами Linux, режим курсора выключен; преобразования кнопок в движение/клик мыши нет. Но GUI TWRP не реализует универсальное перемещение фокуса стрелками. Для полной навигации по экранному меню нужно изменять и пересобирать GUI/framework; текущая сборка гарантирует только передачу клавиш, а не управление каждым экраном.
+Keylayout приставки преобразует коды 28/103/108/105/106 в DPAD_CENTER/UP/DOWN/LEFT/RIGHT. Сборщик теперь проверяет эти коды в обоих ИК-профилях и keylayout. Стрелки и OK передаются как клавиши, без эмуляции мыши. Но GUI TWRP не имеет универсального перемещения фокуса стрелками; для полноценного D-pad нужно менять и собирать GUI/framework под совместимое device tree.
 
 ## Известные ограничения
 
